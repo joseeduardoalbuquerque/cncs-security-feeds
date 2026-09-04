@@ -1,6 +1,17 @@
 {
   "schema_version": 1,
   "indicators": {
+    "1.1.1.1": {
+      "first_seen": "2026-09-04T12:09:45Z",
+      "ip_version": 4,
+      "kind": "ip",
+      "last_seen": "2026-09-04T12:09:45Z",
+      "removed_at": null,
+      "source_refs": [
+        "GitHub inbox update"
+      ],
+      "status": "active"
+    },
     "23.227.198.239": {
       "first_seen": "2026-09-04T12:04:08Z",
       "ip_version": 4,
