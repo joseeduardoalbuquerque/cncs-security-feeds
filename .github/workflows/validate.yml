@@ -1,0 +1,34 @@
+name: Validate feeds
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - incoming/cncs.txt
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Validate generated feed
+        run: python scripts/manage_feed.py validate
+
+      - name: Validate manual inbox
+        run: python scripts/manage_feed.py check-input --input incoming/cncs.txt

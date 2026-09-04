@@ -1,0 +1,2 @@
+# Cole aqui os IPs ou CIDR recebidos do CNCS, um por linha.
+# O workflow limpa este ficheiro depois de uma importação bem-sucedida.

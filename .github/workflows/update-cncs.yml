@@ -1,0 +1,79 @@
+name: Update CNCS feed
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - incoming/cncs.txt
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Operation to perform
+        required: true
+        default: add
+        type: choice
+        options:
+          - add
+          - remove
+      indicators:
+        description: IPs or CIDR, separated by spaces or commas
+        required: true
+        type: string
+      source_ref:
+        description: Public, non-confidential source reference
+        required: false
+        default: CNCS notification
+        type: string
+      allow_non_global:
+        description: Allow private or reserved addresses
+        required: false
+        default: false
+        type: boolean
+  repository_dispatch:
+    types:
+      - cncs_indicators_received
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cncs-feed-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Process update
+        env:
+          EVENT_PATH: ${{ github.event_path }}
+        run: python scripts/manage_feed.py event --event-json "$EVENT_PATH"
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Validate generated feed
+        run: python scripts/manage_feed.py validate
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No feed changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/cncs_indicators.json feeds/blacklist_cncs.txt incoming/cncs.txt
+          git commit -m "chore(feed): update CNCS indicators"
+          git push
